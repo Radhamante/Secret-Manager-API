@@ -3,11 +3,11 @@ from models.item import Item
 from schemas.item import ItemCreate
 
 
-def get_item(db: Session, item_id: int):
+def read_item(db: Session, item_id: int):
     return db.query(Item).filter(Item.id == item_id).first()
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 10):
+def read_items(db: Session, skip: int = 0, limit: int = 10):
     return db.query(Item).offset(skip).limit(limit).all()
 
 
