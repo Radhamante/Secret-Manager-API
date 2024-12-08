@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8081
 
 # Étape 6 : Commande pour démarrer l'application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081", "--reload", "--log-config", "log_config.yaml"]

@@ -37,10 +37,10 @@ class Secret(SecretBase):
     usage_count: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class DecryptedSecret(Secret):
     content: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

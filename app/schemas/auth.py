@@ -6,4 +6,4 @@ class AuthBase(BaseModel):
 
 class Auth(AuthBase):
     class Config:
-        orm_mode = True
+        from_attributes = True

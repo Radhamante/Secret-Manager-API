@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import FastAPI, Depends, File, Form, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Depends, File, Form, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -12,6 +12,39 @@ from routers.auth import auth_router
 
 
 from fastapi.openapi.utils import get_openapi
+
+#####################
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# Configuration de MailHog
+SMTP_HOST = "192.168.1.103"  # Adresse du serveur SMTP (MailHog)
+SMTP_PORT = 1025         # Port par défaut de MailHog
+
+# Informations sur l'email
+from_email = "test@example.com"
+to_email = "billydd129@gmail.com"
+subject = "Test Email via MailHog"
+body = "Bonjour,\n\nCeci est un email envoyé via MailHog avec Python.\n\nCordialement,\nVotre API"
+
+# Création de l'email
+message = MIMEMultipart()
+message["From"] = from_email
+message["To"] = to_email
+message["Subject"] = subject
+message.attach(MIMEText(body, "plain"))
+
+# Envoi de l'email
+try:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.sendmail(from_email, to_email, message.as_string())
+        print("Email envoyé avec succès !")
+except Exception as e:
+    print(f"Erreur lors de l'envoi de l'email : {e}")
+
+#####################
 
 app = FastAPI()
 
@@ -42,6 +75,7 @@ def custom_openapi():
 # Appliquer le schéma OpenAPI personnalisé
 app.openapi = custom_openapi
 
+
 app.include_router(items_router)
 app.include_router(auth_router)
 app.include_router(secrets_router)
@@ -68,9 +102,9 @@ async def create_file(
         "fileb_content_type": fileb.content_type,
     }
 
-@app.get("/")
-def redirectToStatic():
-    return RedirectResponse(url="/index.html")
+# @app.get("/")
+# def redirectToStatic():
+#     return RedirectResponse(url="/index.html")
 
 
-app.mount("/", StaticFiles(directory="frontend/build"), name="static")
+# app.mount("/", StaticFiles(directory="frontend/build"), name="static")

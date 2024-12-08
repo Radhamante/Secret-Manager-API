@@ -7,7 +7,7 @@ class BaseUser(BaseModel):
     username: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserCreate(BaseUser):
     is_admin: bool = False
@@ -21,4 +21,4 @@ class User(BaseUser):
     uuid: uuid.UUID
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -13,11 +13,14 @@ services:
       - traefik_proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`secret.radhamante.xyz`)"
-      - "traefik.http.routers.fastapi.entrypoints=websecure"
-      - "traefik.http.routers.fastapi.tls=true"
-      - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
-      - "traefik.http.services.fastapi.loadbalancer.server.port=8081" # Port exposé par FastAPI
+      - "traefik.http.routers.secret.rule=Host(`secret.radhamante.xyz`)"
+      - "traefik.http.routers.secret.entrypoints=websecure"
+      - "traefik.http.routers.secret.tls=true"
+      - "traefik.http.routers.secret.tls.certresolver=myresolver"
+      - "traefik.http.services.secret.loadbalancer.server.port=8081"
+      - "traefik.http.routers.secret.middlewares=crowdsec@docker"
+      - "traefik.http.middlewares.crowdsec.plugin.bouncer.enabled=true"
+      - "traefik.http.middlewares.crowdsec.plugin.bouncer.crowdseclapikey=kdNHxCWcLn+0enY/z7KrhodlO/eTnDSiq1H82a6X86Q"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -26,3 +29,5 @@ services:
 
     volumes:
       - ./app:/app # Montez votre application dans le conteneur
+      - ./log_config.yaml:/app/log_config.yaml # Montez votre fichier de configuration de journalisation
+      - ./logs:/app/logs # Montez votre répertoire de logs
