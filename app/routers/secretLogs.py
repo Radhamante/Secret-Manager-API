@@ -15,7 +15,7 @@ from routers.secret import SECRET_PREFIX
 
 SECRET_LOGS_PREFIX = "/logs"
 secrets_log_router = APIRouter(
-    prefix=f"{SECRET_PREFIX}/{SECRET_LOGS_PREFIX}",
+    prefix=f"{SECRET_PREFIX}{SECRET_LOGS_PREFIX}",
     tags=["secrets-logs"],
     responses={404: {"description": "Not found"}},
 )

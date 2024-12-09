@@ -3,6 +3,7 @@ from io import BytesIO
 
 from auth_user import get_current_user
 from crud.secrets import (
+    count_secrets,
     create_secret_from_file,
     create_secret_from_text,
     read_secret,
@@ -10,6 +11,7 @@ from crud.secrets import (
 )
 from crypting import decrypt_text
 from database import get_db
+from events import secret_created_event
 from fastapi import (
     APIRouter,
     Depends,
@@ -31,6 +33,7 @@ from schemas.secret import (
     SecretType,
 )
 from sqlalchemy.orm import Session
+from sse_starlette import EventSourceResponse
 
 SECRET_PREFIX = "/secrets"
 secrets_router = APIRouter(
@@ -133,6 +136,25 @@ async def post_secret(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
         )
+
+
+@secrets_router.get(
+    "/count",
+    summary="Get the count of secrets created",
+    description="Get the count of secrets in real-time using Server-Sent Events (SSE). ( Only visible in console )",
+)
+async def get_secret_count(db: Session = Depends(get_db)):
+    async def secret_created_event_generator(db):
+        while True:
+            await secret_created_event.wait()
+            secret_created_event.clear()
+            count = count_secrets(db)
+            yield {"event": "update", "data": str(count)}
+
+    return EventSourceResponse(
+        secret_created_event_generator(db),
+        send_timeout=30,
+    )
 
 
 @secrets_router.get(

@@ -1,14 +1,15 @@
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 
 from crud.secretLog import create_secret_logs
 from crypting import encrypt_text
+from events import secret_created_event
 from hash_manager import hash_password, verify_password
 from models.secret import Secret
 from models.secretContent import SecretContent
 from models.secretFileContent import SecretFileContent
 from models.secretTextContent import SecretTextContent
-from schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText, SecretType
+from schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText
 from schemas.secretLog import SecretLogActionEnum
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -95,5 +96,10 @@ def create_secret(db: Session, secret_create: SecretCreate, content: SecretConte
     db.add(db_secret)
     db.commit()
     db.refresh(db_secret)
+    secret_created_event.set()
     create_secret_logs(db, db_secret.uuid, SecretLogActionEnum.CREATE)
     return db_secret
+
+
+def count_secrets(db: Session):
+    return db.query(Secret).count()
