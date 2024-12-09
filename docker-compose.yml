@@ -30,4 +30,4 @@ services:
     volumes:
       - ./app:/app # Montez votre application dans le conteneur
       - ./log_config.yaml:/app/log_config.yaml # Montez votre fichier de configuration de journalisation
-      - ./logs:/app/logs # Montez votre répertoire de logs
+      - ./logs:/logs # Montez votre répertoire de logs

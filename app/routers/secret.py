@@ -15,10 +15,8 @@ from models.user import User
 from auth_user import get_current_user
 from crud.secrets import read_secrets
 from crypting import decrypt_text
-from models.secretFileContent import SecretFileContent
-from models.secretTextContent import SecretTextContent
-from models.secret import Secret as SecretModel
 from hash_manager import verify_password
+from routers.secretLogs import secrets_log_router
 from schemas.secret import (
     DecryptedSecret,
     SecretCreateText,
@@ -36,6 +34,8 @@ secrets_router = APIRouter(
 )
 
 logger = logging.getLogger(__name__)
+
+secrets_router.include_router(secrets_log_router)
 
 
 @secrets_router.post("/file", response_model=Secret)
@@ -145,8 +145,10 @@ async def get_secret(
 async def get_secrets(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 10,
 ):
     if user.is_admin:
-        return read_secrets(db)
+        return read_secrets(db, skip, limit)
     else:
         raise HTTPException(status_code=403, detail="Forbidden")

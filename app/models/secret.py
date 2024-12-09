@@ -17,3 +17,4 @@ class Secret(Base):
     content_id = Column(UUID(as_uuid=True), ForeignKey('secret_content.uuid'), nullable=True)
 
     content = relationship("SecretContent", uselist=False, back_populates="secret")
+    logs = relationship("SecretLogs", back_populates="secret")

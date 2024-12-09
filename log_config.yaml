@@ -18,7 +18,7 @@ handlers:
     stream: ext://sys.stdout
   file:
     class: logging.FileHandler
-    filename: logs/fastapi_logs.log
+    filename: ../logs/fastapi_logs.log
     mode: a
     encoding: utf-8
     formatter: default

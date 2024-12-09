@@ -6,6 +6,8 @@ from hash_manager import hash_password, verify_password
 from crypting import encrypt_text
 from models.secretFileContent import SecretFileContent
 from models.secretTextContent import SecretTextContent
+from crud.secretLog import create_secret_logs
+from schemas.secretLog import SecretLogActionEnum
 from schemas.secret import SecretCreateText, SecretType
 
 
@@ -21,6 +23,9 @@ def read_secret(db: Session, secret_uuid: str, password: str):
     )
     if secret and verify_password(password, secret.hashed_password):
         secret.usage_count += 1
+        create_secret_logs(db, secret_uuid, SecretLogActionEnum.GET)
+        if(secret.usage_limit and secret.usage_limit >= secret.usage_count):
+            create_secret_logs(db, secret_uuid, SecretLogActionEnum.EXPIRE)
         db.commit()
         db.refresh(secret)
         return secret
@@ -57,7 +62,9 @@ def create_secret(db: Session, secret: SecretCreateText):
         content=content,
     )
 
+
     db.add(db_secret)
     db.commit()
     db.refresh(db_secret)
+    create_secret_logs(db, db_secret.uuid, SecretLogActionEnum.CREATE)
     return db_secret
