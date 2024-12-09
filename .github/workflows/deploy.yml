@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}  # Nom d'utilisateur SSH
           key: ${{ secrets.VPS_SSH_KEY }}  # Clé privée SSH
           script: |
-            cd /chemin/vers/le/dossier/projet  # Remplace par le chemin correct sur ton VPS
+            cd /home/debian/projects/secretManager  # Remplace par le chemin correct sur ton VPS
             git pull origin main  # Mettre à jour le code
             docker-compose down  # Arrêter les conteneurs existants
             docker-compose up -d  # Redémarrer avec les dernières modifications
