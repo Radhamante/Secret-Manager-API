@@ -9,6 +9,8 @@ services:
       context: . # Le répertoire contenant le Dockerfile
     container_name: fastapi_app
     restart: always
+    ports:
+      - 8081:8081
     networks:
       - traefik_proxy
     labels:

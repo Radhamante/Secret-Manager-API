@@ -3,10 +3,10 @@ import base64
 import hashlib
 
 
-def encrypt_text(text: str, password: str) -> str:
+def encrypt_text(text: bytes, password: str) -> str:
     key = hashlib.sha256(password.encode()).digest()
     fernet = Fernet(base64.urlsafe_b64encode(key))
-    encrypted_text = fernet.encrypt(text.encode())
+    encrypted_text = fernet.encrypt(text)
     return encrypted_text.decode()
 
 

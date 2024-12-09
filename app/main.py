@@ -1,15 +1,13 @@
 import logging
-from fastapi import FastAPI, Depends, Request
-
-from database import create_tables
 
 from auth_user import get_current_user
+from database import create_tables
+from fastapi import Depends, FastAPI, Request
+from fastapi.openapi.utils import get_openapi
+from routers.auth import auth_router
 from routers.items import items_router
 from routers.secret import secrets_router
-from routers.auth import auth_router
-
-
-from fastapi.openapi.utils import get_openapi
+from routers.secretLogs import secrets_log_router
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +44,7 @@ app.openapi = custom_openapi
 app.include_router(items_router)
 app.include_router(auth_router)
 app.include_router(secrets_router)
+app.include_router(secrets_log_router)
 
 
 @app.on_event("startup")

@@ -1,14 +1,16 @@
+import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Optional
-import uuid
-from fastapi import File
+from typing import Annotated, BinaryIO, Optional
+
+from fastapi import File, UploadFile
 from pydantic import BaseModel
-from typing import Annotated
+
 
 class SecretType(Enum):
     TEXT = "text"
     FILE = "file"
+
 
 class SecretBase(BaseModel):
     usage_limit: Optional[int]
@@ -18,17 +20,16 @@ class SecretBase(BaseModel):
 class SecretCreate(SecretBase):
     password: str
     duration: int
-    filename: Optional[str]
-    pass
+
 
 class SecretCreateText(SecretCreate):
-    content: str
-    pass
+    text_content: str
+
 
 class SecretCreateFile(SecretCreate):
-    file: Annotated[bytes, File()]
+    file_content: bytes
+    filename: str
 
-    pass
 
 class Secret(SecretBase):
     uuid: uuid.UUID
@@ -38,6 +39,7 @@ class Secret(SecretBase):
 
     class Config:
         from_attributes = True
+
 
 class DecryptedSecret(Secret):
     content: str
