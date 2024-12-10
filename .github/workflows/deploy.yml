@@ -14,7 +14,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Étape 2 : Se connecter au VPS et lancer Docker Compose
+      # Étape 2 : Installer Python et les dépendances
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Remplace par la version de Python que tu utilises
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Installe les dépendances, incluant pytest
+
+      # Étape 3 : Lancer les tests
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ --maxfail=1 --disable-warnings -q  # Exécute les tests dans le dossier 'tests'
+
+      # Étape 4 : Se connecter au VPS et lancer Docker Compose
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
