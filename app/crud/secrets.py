@@ -1,16 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 
-from crud.secretLog import create_secret_logs
-from crypting import encrypt_text
-from events import secret_created_event
-from hash_manager import hash_password, verify_password
-from models.secret import Secret
-from models.secretContent import SecretContent
-from models.secretFileContent import SecretFileContent
-from models.secretTextContent import SecretTextContent
-from schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText
-from schemas.secretLog import SecretLogActionEnum
+from app.crud.secretLog import create_secret_logs
+from app.crypting import encrypt_text
+from app.events import secret_created_event
+from app.hash_manager import hash_password, verify_password
+from app.models.secret import Secret
+from app.models.secretContent import SecretContent
+from app.models.secretFileContent import SecretFileContent
+from app.models.secretTextContent import SecretTextContent
+from app.schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText
+from app.schemas.secretLog import SecretLogActionEnum
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 

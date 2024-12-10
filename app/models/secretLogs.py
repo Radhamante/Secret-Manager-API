@@ -1,9 +1,9 @@
 import uuid
 from sqlalchemy import UUID, Column, Enum, ForeignKey, DateTime, func
-from database import Base
+from app.database import Base
 from sqlalchemy.orm import relationship
 
-from schemas.secretLog import SecretLogActionEnum
+from app.schemas.secretLog import SecretLogActionEnum
 
 class SecretLogs(Base):
     __tablename__ = "secretLogs"

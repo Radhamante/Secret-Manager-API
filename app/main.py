@@ -1,12 +1,12 @@
 import logging
 
-from database import create_tables
+from app.database import create_tables
 from fastapi import FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
-from routers.auth import auth_router
-from routers.secret import secrets_router
-from routers.secretLogs import secrets_log_router
+from app.routers.auth import auth_router
+from app.routers.secret import secrets_router
+from app.routers.secretLogs import secrets_log_router
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +50,6 @@ async def onStartup():
     create_tables()
 
 
-# route "main" qui affiche les headers de la requete reçu
-@app.get("/main")
-def main(request: Request):
-    headers = request.headers
-    logger.info(f"Headers: {headers}")
-    return "Salut"
-
-
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def redirectToStatic():
     return RedirectResponse(url="/docs")

@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas.user import User, UserCreate, UserLogin
-from hash_manager import verify_password
-from access_token_manager import create_access_token
-from crud.user import create_user
-from database import get_db
+from app.schemas.user import User, UserCreate, UserLogin
+from app.hash_manager import verify_password
+from app.access_token_manager import create_access_token
+from app.crud.user import create_user
+from app.database import get_db
 import logging
-from models.user import User as UserModel
+from app.models.user import User as UserModel
 
 auth_router = APIRouter(
-    tags=["auth"],
+    tags=["Auth"],
     responses={404: {"description": "Not found"}},
 )
 

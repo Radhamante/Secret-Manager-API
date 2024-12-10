@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.secretLogs import SecretLogs
+from app.models.secretLogs import SecretLogs
 
 
 def read_secret_logs(db: Session, skip: int = 0, limit: int = 10):

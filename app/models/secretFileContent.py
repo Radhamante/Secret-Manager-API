@@ -1,5 +1,5 @@
 from sqlalchemy import UUID, Column, ForeignKey, String
-from models.secretContent import SecretContent
+from app.models.secretContent import SecretContent
 
 
 class SecretFileContent(SecretContent):

@@ -25,4 +25,4 @@ jobs:
             cd /home/debian/projects/secretManager  # Remplace par le chemin correct sur ton VPS
             git pull origin master  # Mettre à jour le code
             docker compose down  # Arrêter les conteneurs existants
-            docker compose up -d  # Redémarrer avec les dernières modifications
+            docker compose up -d --build --remove-orphans  # Redémarrer avec les dernières modifications

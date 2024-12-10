@@ -4,19 +4,19 @@ from fastapi import (
     HTTPException,
 )
 from sqlalchemy.orm import Session
-from models.user import User
-from auth_user import get_current_user
-from crud.secretLog import read_secret_log, read_secret_logs
-from schemas.secretLog import SecretLog
-from database import get_db
+from app.models.user import User
+from app.auth_user import get_current_user
+from app.crud.secretLog import read_secret_log, read_secret_logs
+from app.schemas.secretLog import SecretLog
+from app.database import get_db
 import logging
 
-from routers.secret import SECRET_PREFIX
+from app.routers.secret import SECRET_PREFIX
 
 SECRET_LOGS_PREFIX = "/logs"
 secrets_log_router = APIRouter(
     prefix=f"{SECRET_PREFIX}{SECRET_LOGS_PREFIX}",
-    tags=["secrets-logs"],
+    tags=["Secrets-logs"],
     responses={404: {"description": "Not found"}},
 )
 

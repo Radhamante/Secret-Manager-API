@@ -1,17 +1,17 @@
 import logging
 from io import BytesIO
 
-from auth_user import get_current_user
-from crud.secrets import (
+from app.auth_user import get_current_user
+from app.crud.secrets import (
     count_secrets,
     create_secret_from_file,
     create_secret_from_text,
     read_secret,
     read_secrets,
 )
-from crypting import decrypt_text
-from database import get_db
-from events import secret_created_event
+from app.crypting import decrypt_text
+from app.database import get_db
+from app.events import secret_created_event
 from fastapi import (
     APIRouter,
     Depends,
@@ -24,8 +24,8 @@ from fastapi import (
     status,
 )
 from fastapi.responses import StreamingResponse
-from models.user import User
-from schemas.secret import (
+from app.models.user import User
+from app.schemas.secret import (
     DecryptedSecret,
     Secret,
     SecretCreateFile,
@@ -38,7 +38,7 @@ from sse_starlette import EventSourceResponse
 SECRET_PREFIX = "/secrets"
 secrets_router = APIRouter(
     prefix=SECRET_PREFIX,
-    tags=["secrets"],
+    tags=["Secrets"],
     responses={404: {"description": "Not found"}},
 )
 

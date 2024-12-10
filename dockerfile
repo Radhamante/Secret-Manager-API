@@ -2,10 +2,10 @@
 FROM python:3.11-slim
 
 # Étape 2 : Définir le répertoire de travail dans le conteneur
-WORKDIR /app
+WORKDIR /api
 
 # Étape 3 : Copier les fichiers de l'application
-COPY . /app
+COPY requirements.txt /api/requirements.txt
 
 # Étape 4 : Installer les dépendances
 RUN pip install -r requirements.txt
@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8081
 
 # Étape 6 : Commande pour démarrer l'application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8081", "--reload", "--log-config", "log_config.yaml"]
+CMD ["python", "startServer.py"]

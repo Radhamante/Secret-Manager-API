@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from hash_manager import hash_password
-from models.user import User
-from schemas.user import UserCreate
+from app.hash_manager import hash_password
+from app.models.user import User
+from app.schemas.user import UserCreate
 
 
 def create_user(db: Session, user: UserCreate) -> User:

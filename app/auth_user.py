@@ -1,10 +1,10 @@
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException
 
-from access_token_manager import decode_access_token
-from models.user import User
-from crud.user import get_user
-from database import get_db
+from app.access_token_manager import decode_access_token
+from app.models.user import User
+from app.crud.user import get_user
+from app.database import get_db
 from sqlalchemy.orm import Session
 
 
