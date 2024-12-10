@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.user import User, UserCreate, UserLogin
 from app.hash_manager import verify_password
 from app.access_token_manager import create_access_token
-from app.crud.user import create_user
+from app.crud.user import create_user, get_user_by_username_password
 from app.database import get_db
 import logging
 from app.models.user import User as UserModel
@@ -32,12 +32,7 @@ def register(auth: UserCreate, db: Session = Depends(get_db)) -> User:
 @auth_router.post("/login")
 def login(auth: UserLogin, db: Session = Depends(get_db)):
     try:
-        user = db.query(UserModel).filter(UserModel.username == auth.username).first()
-        if not user or not verify_password(auth.password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-            )
-
+        user = get_user_by_username_password(db, auth.username, auth.password)
         access_token = create_access_token(data={"sub": str(user.uuid)})
         return {"access_token": access_token, "token_type": "bearer"}
     except HTTPException as e:

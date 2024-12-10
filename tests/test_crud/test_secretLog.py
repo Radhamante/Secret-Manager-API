@@ -1,16 +1,12 @@
-import asyncio
-
-import pytest
-
-from app.crud.secretLog import read_secret_logs, read_secret_log, create_secret_logs
+from app.crud.secretLog import create_secret_logs, read_secret_log, read_secret_logs
 from app.crud.secrets import read_secret
-from app.models.secret import Secret
 from app.schemas.secretLog import SecretLogActionEnum
-from tests.test_crud.test_secret import test_create_secret_from_text, test_read_secret_success
+from tests.test_crud.test_secret import test_create_secret_from_text
 
 
-
-def test_create_secret_logs(db_session, ):
+def test_create_secret_logs(
+    db_session,
+):
     created_secret = test_create_secret_from_text(db_session)
     result = create_secret_logs(
         db=db_session,
@@ -19,25 +15,30 @@ def test_create_secret_logs(db_session, ):
     )
     assert result.secret_id == created_secret.uuid
 
+
 def test_read_secret_logs(db_session):
     created_secret_1 = test_create_secret_from_text(db_session)
     created_secret_2 = test_create_secret_from_text(db_session)
 
     result = read_secret_logs(db_session)
-    
+
     assert len(result) == 2
     assert result[0].secret_id == created_secret_1.uuid
     assert result[1].secret_id == created_secret_2.uuid
-    
+
+
 def test_read_secret_log(db_session):
     created_secret = test_create_secret_from_text(db_session)
     result = read_secret_log(db_session, created_secret.uuid)
     assert result[0].secret_id == created_secret.uuid
     assert result[0].action == SecretLogActionEnum.CREATE
 
+
 def test_secret_log_enum(db_session):
     password = "password"
-    created_create_secret = test_create_secret_from_text(db_session, password=password, usage_limit=1)
+    created_create_secret = test_create_secret_from_text(
+        db_session, password=password, usage_limit=1
+    )
     read_secret(db_session, created_create_secret.uuid, password)
     result = read_secret_log(db_session, created_create_secret.uuid)
 
@@ -49,4 +50,3 @@ def test_secret_log_enum(db_session):
 
     assert result[2].secret_id == created_create_secret.uuid
     assert result[2].action == SecretLogActionEnum.EXPIRE
-
