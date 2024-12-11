@@ -1,3 +1,13 @@
+x-logging: &default-logging
+  driver: loki
+  options:
+    loki-url: 'http://localhost:3100/api/prom/push'
+    loki-pipeline-stages: |
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
+          max_wait_time: 3s
+      - regex:
+          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}) (?P<message>(?s:.*))$$'
 
 networks:
   traefik_proxy:
@@ -12,7 +22,8 @@ services:
     ports:
       - 8081:8081
     networks:
-      - traefik_proxy
+      traefik_proxy:
+        ipv4_address: 192.168.1.100
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.secret.rule=Host(`secret.radhamante.xyz`)"
@@ -28,6 +39,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_IP=${POSTGRES_IP}
+    logging: *default-logging
 
     volumes:
       - .:/api # Montez votre application dans le conteneur
