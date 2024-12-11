@@ -1,7 +1,7 @@
-from datetime import datetime
-from typing import Optional
 import uuid
+
 from pydantic import BaseModel
+
 
 class BaseUser(BaseModel):
     username: str
@@ -9,11 +9,8 @@ class BaseUser(BaseModel):
     class Config:
         from_attributes = True
 
-class UserCreate(BaseUser):
-    is_admin: bool = False
-    password: str
 
-class UserLogin(BaseUser):
+class UserCreate(BaseUser):
     password: str
 
 
