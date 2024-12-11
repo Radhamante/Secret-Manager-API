@@ -1,10 +1,9 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
 from app.hash_manager import hash_password, verify_password
 from app.models.user import User
 from app.schemas.user import UserCreate
-from sqlalchemy.exc import IntegrityError
 
 
 def create_user(db: Session, user: UserCreate) -> User:
@@ -17,6 +16,9 @@ def create_user(db: Session, user: UserCreate) -> User:
     except IntegrityError:
         db.rollback()
         raise Exception("Username already exists")
+    except Exception as e:
+        db.rollback()
+        raise e
     return db_user
 
 
