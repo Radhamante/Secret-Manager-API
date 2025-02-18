@@ -26,7 +26,7 @@ services:
         ipv4_address: 192.168.1.100
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.secret.rule=Host(`secret.radhamante.xyz`)"
+      - "traefik.http.routers.secret.rule=Host(`api.secret.radhamante.xyz`)"
       - "traefik.http.routers.secret.entrypoints=websecure"
       - "traefik.http.routers.secret.tls=true"
       - "traefik.http.routers.secret.tls.certresolver=myresolver"

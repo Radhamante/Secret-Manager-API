@@ -9,10 +9,24 @@ from app.routers.auth import auth_router
 from app.routers.secret import secrets_router
 from app.routers.secretLogs import secrets_log_router
 from app.utils import PrometheusMiddleware, metrics, setting_otlp
+from fastapi.middleware.cors import CORSMiddleware
+
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:4200",  # Add your frontend URL here
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 OTLP_GRPC_ENDPOINT = os.environ.get("OTLP_GRPC_ENDPOINT", "http://tempo:4317")
 APP_NAME = os.environ.get("APP_NAME", "fastapi-app")
