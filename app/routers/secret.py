@@ -1,17 +1,6 @@
 import logging
 from io import BytesIO
 
-from app.auth_user import get_current_user
-from app.crud.secrets import (
-    count_secrets,
-    create_secret_from_file,
-    create_secret_from_text,
-    read_secret,
-    read_secrets,
-)
-from app.crypting import decrypt_text
-from app.database import get_db
-from app.events import secret_created_event
 from fastapi import (
     APIRouter,
     Depends,
@@ -23,7 +12,23 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import StreamingResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy.orm import Session
+from sse_starlette import EventSourceResponse
+
+from app.auth_user import get_current_user
+from app.crud.secrets import (
+    count_secrets,
+    create_secret_from_file,
+    create_secret_from_text,
+    read_secret,
+    read_secret_type,
+    read_secrets,
+)
+from app.crypting import decrypt_text
+from app.database import get_db
+from app.events import secret_created_event
 from app.models.user import User
 from app.schemas.secret import (
     DecryptedSecret,
@@ -32,8 +37,6 @@ from app.schemas.secret import (
     SecretCreateText,
     SecretType,
 )
-from sqlalchemy.orm import Session
-from sse_starlette import EventSourceResponse
 
 SECRET_PREFIX = "/secrets"
 secrets_router = APIRouter(
@@ -158,6 +161,38 @@ async def get_secret_count(db: Session = Depends(get_db)):
 
 
 @secrets_router.get(
+    "/{secret_uuid}/type",
+    responses={
+        200: {
+            "content": {
+                "application/json": {},
+            },
+            "description": "Successful Response",
+        },
+        404: {"description": "Secret not found"},
+        500: {"description": "Internal Server Error"},
+    },
+    summary="Retrieve a secret type",
+    description="Retrieve a secret type using its UUID",
+    response_description="The type of the retrieved secret",
+)
+async def get_secret_type(
+    secret_uuid: str = Path(..., description="The UUID of the secret to retrieve"),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Read the secret from the database
+        secret_type: str = read_secret_type(db, secret_uuid) or "text"
+        return JSONResponse(content=jsonable_encoder({"type": secret_type}))
+    except Exception as e:
+        logger.error(f"Error retrieving secret type: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error",
+        )
+
+
+@secrets_router.get(
     "/{secret_uuid}",
     responses={
         200: {
@@ -198,9 +233,7 @@ async def get_secret(
             return StreamingResponse(
                 file_stream,
                 media_type="application/octet-stream",
-                headers={
-                    "Content-Disposition": f"attachment; filename={secret.content.filename}"
-                },
+                headers={"Content-Disposition": f"filename={secret.content.filename}"},
             )
         else:
             secret_dict = secret.__dict__.copy()

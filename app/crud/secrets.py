@@ -17,6 +17,14 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 
+def read_secret_type(db: Session, secret_uuid: str) -> str | None:
+    secret = db.query(Secret).filter(Secret.uuid == secret_uuid).first()
+    if secret:
+        return secret.content.type
+    else:
+        return None
+
+
 def read_secret(db: Session, secret_uuid: str, password: str):
     secret = (
         db.query(Secret)
