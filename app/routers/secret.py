@@ -229,7 +229,7 @@ async def get_secret(
 
         # Check if the secret is a file
         if secret.content.type == SecretType.FILE.value:
-            file_stream = BytesIO(decrypted_content.encode())
+            file_stream = BytesIO(decrypted_content)
             return StreamingResponse(
                 file_stream,
                 media_type="application/octet-stream",
@@ -238,7 +238,7 @@ async def get_secret(
         else:
             secret_dict = secret.__dict__.copy()
             secret_dict.pop("content", None)
-            decrypted_secret = DecryptedSecret(**secret_dict, content=decrypted_content)
+            decrypted_secret = DecryptedSecret(**secret_dict, content=decrypted_content.decode())
             return decrypted_secret
     except HTTPException as e:
         raise e

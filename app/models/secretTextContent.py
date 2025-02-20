@@ -1,4 +1,4 @@
-from sqlalchemy import UUID, Column, ForeignKey, String
+from sqlalchemy import UUID, Column, ForeignKey, LargeBinary
 from app.models.secretContent import SecretContent
 
 
@@ -8,6 +8,6 @@ class SecretTextContent(SecretContent):
     uuid = Column(
         UUID(as_uuid=True), ForeignKey("secret_content.uuid"), primary_key=True
     )
-    content = Column(String, nullable=False)
+    content = Column(LargeBinary, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": "text"}

@@ -1,4 +1,4 @@
-from sqlalchemy import UUID, Column, ForeignKey, String
+from sqlalchemy import UUID, Column, ForeignKey, String, LargeBinary
 from app.models.secretContent import SecretContent
 
 
@@ -8,7 +8,7 @@ class SecretFileContent(SecretContent):
     uuid = Column(
         UUID(as_uuid=True), ForeignKey("secret_content.uuid"), primary_key=True
     )
-    content = Column(String, nullable=False)
+    content = Column(LargeBinary, nullable=False)
     filename = Column(String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "file"}
