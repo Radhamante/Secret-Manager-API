@@ -26,8 +26,9 @@ def test_create_user_with_same_username(db_session):
     with pytest.raises(Exception) as excinfo:
         user_create = UserCreate(username="username", password="different_password")
         create_user(db_session, user_create)
-    assert excinfo.typename == "Exception"
+        print(excinfo)
     assert excinfo.value.args[0] == "Username already exists"
+    assert excinfo.typename == "ValueError"
 
 
 def test_create_user_with_same_username_different_password(db_session):
@@ -40,8 +41,9 @@ def test_create_user_with_same_username_different_password(db_session):
     with pytest.raises(Exception) as excinfo:
         user_create = UserCreate(username="username", password="different_password")
         create_user(db_session, user_create)
-    assert excinfo.typename == "Exception"
+        print(excinfo.statement)
     assert excinfo.value.args[0] == "Username already exists"
+    assert excinfo.typename == "ValueError"
 
 
 def test_get_user_by_uuid(db_session):

@@ -6,8 +6,9 @@ from tests.test_crud.test_secret import test_create_secret_from_text
 
 def test_create_secret_logs(
     db_session,
+    user,
 ):
-    created_secret = test_create_secret_from_text(db_session)
+    created_secret = test_create_secret_from_text(db_session, user)
     result = create_secret_logs(
         db=db_session,
         secret_uuid=created_secret.uuid,
@@ -16,9 +17,9 @@ def test_create_secret_logs(
     assert result.secret_id == created_secret.uuid
 
 
-def test_read_secret_logs(db_session):
-    created_secret_1 = test_create_secret_from_text(db_session)
-    created_secret_2 = test_create_secret_from_text(db_session)
+def test_read_secret_logs(db_session, user):
+    created_secret_1 = test_create_secret_from_text(db_session, user)
+    created_secret_2 = test_create_secret_from_text(db_session, user)
 
     result = read_secret_logs(db_session)
 
@@ -27,17 +28,17 @@ def test_read_secret_logs(db_session):
     assert result[1].secret_id == created_secret_2.uuid
 
 
-def test_read_secret_log(db_session):
-    created_secret = test_create_secret_from_text(db_session)
+def test_read_secret_log(db_session, user):
+    created_secret = test_create_secret_from_text(db_session, user)
     result = read_secret_log(db_session, created_secret.uuid)
     assert result[0].secret_id == created_secret.uuid
     assert result[0].action == SecretLogActionEnum.CREATE
 
 
-def test_secret_log_enum(db_session):
+def test_secret_log_enum(db_session, user):
     password = "password"
     created_create_secret = test_create_secret_from_text(
-        db_session, password=password, usage_limit=1
+        db_session, user, password=password, usage_limit=1
     )
     read_secret(db_session, created_create_secret.uuid, password)
     result = read_secret_log(db_session, created_create_secret.uuid)
