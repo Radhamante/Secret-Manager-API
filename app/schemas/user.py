@@ -1,5 +1,7 @@
+from typing import Annotated
 import uuid
 
+from fastapi import Form
 from pydantic import BaseModel
 
 
@@ -10,8 +12,21 @@ class BaseUser(BaseModel):
         from_attributes = True
 
 
-class UserCreate(BaseUser):
-    password: str
+class UserCreate:
+    def __init__(
+        self,
+        *,
+        username: Annotated[
+            str,
+            Form(),
+        ],
+        password: Annotated[
+            str,
+            Form(),
+        ]
+    ):
+        self.username = username
+        self.password = password
 
 
 class User(BaseUser):

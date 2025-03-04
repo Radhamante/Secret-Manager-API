@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, BinaryIO, Optional
+from typing import Optional
 
-from fastapi import File, UploadFile
 from pydantic import BaseModel
 
 
@@ -36,6 +35,7 @@ class Secret(SecretBase):
     creation: datetime
     destruction: Optional[datetime]
     usage_count: int
+    user_uuid: Optional[uuid.UUID]
 
     class Config:
         from_attributes = True

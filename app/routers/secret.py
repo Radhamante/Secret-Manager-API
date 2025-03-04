@@ -1,5 +1,6 @@
 import logging
 from io import BytesIO
+from typing import Optional
 
 from fastapi import (
     APIRouter,
@@ -24,7 +25,7 @@ from app.crud.secrets import (
     create_secret_from_text,
     read_secret,
     read_secret_type,
-    read_secrets,
+    read_user_secrets,
 )
 from app.crypting import decrypt_text
 from app.database import get_db
@@ -56,6 +57,8 @@ logger = logging.getLogger(__name__)
     response_description="The details of the uploaded secret file",
 )
 async def post_secret_file(
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
     file: UploadFile = File(..., description="The file to be uploaded"),
     password: str = Form(..., description="The password for the secret"),
     usage_limit: int = Form(
@@ -64,7 +67,6 @@ async def post_secret_file(
     duration: int = Form(
         ..., description="The duration for which the secret is valid. 0 = No expiration"
     ),
-    db: Session = Depends(get_db),
 ):
     try:
         # Read the file content asynchronously
@@ -83,6 +85,7 @@ async def post_secret_file(
         # Create the secret in the database
         created_secret = create_secret_from_file(
             db=db,
+            user=user,
             secret_create_file=secret_create_file,
         )
 
@@ -104,7 +107,9 @@ async def post_secret_file(
     description="Create a secret text that will be stored securely. The text requires a password and has optional usage limits and duration.",
     response_description="The details of the created secret text",
 )
-async def post_secret(
+async def post_secret_text(
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
     content: str = Form(..., description="The text content to be stored as a secret"),
     usage_limit: int = Form(
         ..., description="The usage limit for the secret. 0 = No limit"
@@ -113,7 +118,6 @@ async def post_secret(
     duration: int = Form(
         ..., description="The duration for which the secret is valid. 0 = No expiration"
     ),
-    db: Session = Depends(get_db),
 ):
     try:
         # Create a SecretCreateText object with the provided details
@@ -128,6 +132,7 @@ async def post_secret(
         # Create the secret in the database
         created_secret = create_secret_from_text(
             db=db,
+            user=user,
             secret_create_text=secret_create_text,
         )
 
@@ -148,11 +153,12 @@ async def post_secret(
 )
 async def get_secret_count(db: Session = Depends(get_db)):
     async def secret_created_event_generator(db):
+        secret_created_event.set()
         while True:
             await secret_created_event.wait()
             secret_created_event.clear()
             count = count_secrets(db)
-            yield {"event": "update", "data": str(count)}
+            yield {"data": str(count)}
 
     return EventSourceResponse(
         secret_created_event_generator(db),
@@ -229,7 +235,7 @@ async def get_secret(
 
         # Check if the secret is a file
         if secret.content.type == SecretType.FILE.value:
-            file_stream = BytesIO(decrypted_content.encode())
+            file_stream = BytesIO(decrypted_content)
             return StreamingResponse(
                 file_stream,
                 media_type="application/octet-stream",
@@ -238,7 +244,9 @@ async def get_secret(
         else:
             secret_dict = secret.__dict__.copy()
             secret_dict.pop("content", None)
-            decrypted_secret = DecryptedSecret(**secret_dict, content=decrypted_content)
+            decrypted_secret = DecryptedSecret(
+                **secret_dict, content=decrypted_content.decode()
+            )
             return decrypted_secret
     except HTTPException as e:
         raise e
@@ -253,8 +261,8 @@ async def get_secret(
 @secrets_router.get(
     "/",
     response_model=list[Secret],
-    summary="Retrieve all secrets",
-    description="Retrieve all secrets with pagination. Only accessible by admin users.",
+    summary="Retrieve all secrets of a user",
+    description="Retrieve all secrets of a user with pagination.",
     response_description="All secrets paginated",
 )
 async def get_secrets(
@@ -263,7 +271,7 @@ async def get_secrets(
     skip: int = Query(0, description="The number of secrets to skip"),
     limit: int = Query(10, description="The maximum number of secrets to return"),
 ):
-    if user.is_admin:
-        return read_secrets(db, skip, limit)
+    if user:
+        return read_user_secrets(db, user, skip, limit)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise HTTPException(status_code=401, detail="Not authenticated")

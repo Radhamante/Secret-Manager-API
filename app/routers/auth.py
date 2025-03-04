@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,6 +26,12 @@ def register(
 ) -> User:
     try:
         return create_user(db, auth)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists",
+        )
     except Exception as e:
         logger.error(f"Error creating user: {e}")
         db.rollback()
