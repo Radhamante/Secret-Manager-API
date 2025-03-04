@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from typing import Optional
 
 from app.crud.secretLog import create_secret_logs
 from app.crypting import encrypt_text
@@ -9,6 +10,7 @@ from app.models.secret import Secret
 from app.models.secretContent import SecretContent
 from app.models.secretFileContent import SecretFileContent
 from app.models.secretTextContent import SecretTextContent
+from app.models.user import User
 from app.schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText
 from app.schemas.secretLog import SecretLogActionEnum
 from sqlalchemy import or_
@@ -47,11 +49,26 @@ def read_secret(db: Session, secret_uuid: str, password: str):
         return None
 
 
-def read_secrets(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(Secret).offset(skip).limit(limit).all()
+def read_user_secrets(db: Session, user: User, skip: int = 0, limit: int = 10):
+    if user.is_admin:
+        return (
+            db.query(Secret)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+    return (
+        db.query(Secret)
+        .filter(Secret.user_uuid == user.uuid)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
-def create_secret_from_text(db: Session, secret_create_text: SecretCreateText):
+def create_secret_from_text(
+    db: Session, user: Optional[User], secret_create_text: SecretCreateText
+):
     content = SecretTextContent(
         content=encrypt_text(
             secret_create_text.text_content.encode(),
@@ -63,12 +80,15 @@ def create_secret_from_text(db: Session, secret_create_text: SecretCreateText):
     )
     return create_secret(
         db,
+        user=user,
         content=content,
         secret_create=secret_create,
     )
 
 
-def create_secret_from_file(db: Session, secret_create_file: SecretCreateFile):
+def create_secret_from_file(
+    db: Session, user: Optional[User], secret_create_file: SecretCreateFile
+):
     content = SecretFileContent(
         content=encrypt_text(
             secret_create_file.file_content,
@@ -81,12 +101,18 @@ def create_secret_from_file(db: Session, secret_create_file: SecretCreateFile):
     )
     return create_secret(
         db,
+        user=user,
         content=content,
         secret_create=secret_create,
     )
 
 
-def create_secret(db: Session, secret_create: SecretCreate, content: SecretContent):
+def create_secret(
+    db: Session,
+    user: Optional[User],
+    secret_create: SecretCreate,
+    content: SecretContent,
+):
     now = datetime.now()
 
     db_secret = Secret(
@@ -99,6 +125,7 @@ def create_secret(db: Session, secret_create: SecretCreate, content: SecretConte
         usage_limit=secret_create.usage_limit if secret_create.usage_limit else None,
         hashed_password=hash_password(secret_create.password),
         content=content,
+        user_uuid=user.uuid if user else None,
     )
 
     db.add(db_secret)

@@ -13,9 +13,6 @@ def create_user(db: Session, user: UserCreate) -> User:
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-    except IntegrityError:
-        db.rollback()
-        raise Exception("Username already exists")
     except Exception as e:
         db.rollback()
         raise e

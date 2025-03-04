@@ -14,7 +14,12 @@ class Secret(Base):
     usage_limit = Column(Integer, index=True, nullable=True)
     hashed_password = Column(String, index=True, nullable=False)
 
-    content_id = Column(UUID(as_uuid=True), ForeignKey('secret_content.uuid'), nullable=True)
+    user_uuid = Column(UUID(as_uuid=True), ForeignKey("user.uuid"), nullable=True)
+    user = relationship("User", back_populates="secrets")
+
+    content_id = Column(
+        UUID(as_uuid=True), ForeignKey("secret_content.uuid"), nullable=True
+    )
 
     content = relationship("SecretContent", uselist=False, back_populates="secret")
     logs = relationship("SecretLogs", back_populates="secret")
