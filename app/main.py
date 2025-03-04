@@ -17,7 +17,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 origins = [
-    "http://localhost:4200",  # Add your frontend URL here
+    "http://secret-manager-front",  # Name of the Angular container in Docker
+    "http://secret-api",  # Name of the backend service in Docker
+    "https://secret.radhamante.xyz",  # Public domain via Traefik
+    "http://localhost:4200",  # Angular
 ]
 
 app.add_middleware(
@@ -31,6 +34,7 @@ app.add_middleware(
 
 OTLP_GRPC_ENDPOINT = os.environ.get("OTLP_GRPC_ENDPOINT", "http://tempo:4317")
 APP_NAME = os.environ.get("APP_NAME", "fastapi-app")
+
 
 class EndpointFilter(logging.Filter):
     # Uvicorn endpoint access log filter
