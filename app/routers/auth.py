@@ -19,35 +19,55 @@ auth_router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@auth_router.post("/register")
+@auth_router.post(
+    "/register",
+    summary="Register a new user",
+    description="Create a new user account with a unique username.",
+    response_model=User,
+    responses={
+        409: {"description": "Username already exists"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 def register(
     auth: Annotated[UserCreate, Depends()],
     db: Session = Depends(get_db),
 ) -> User:
     try:
-        return create_user(db, auth)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists",
-        )
-    except Exception as e:
-        logger.error(f"Error creating user: {e}")
-        db.rollback()
+        user = create_user(db, auth)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
         )
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists",
+        )
+    return user
 
 
-@auth_router.post("/login")
+@auth_router.post(
+    "/login",
+    summary="Login a user",
+    description="Authenticate a user and return an access token.",
+    responses={
+        401: {"description": "Invalid credentials"},
+        500: {"description": "Internal Server Error"},
+    },
+)
 def login(
     auth: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db),
 ):
     try:
         user = get_user_by_username_password(db, auth.username, auth.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
         access_token = create_access_token(data={"sub": str(user.uuid)})
         return {"access_token": access_token, "token_type": "bearer"}
     except HTTPException as e:
