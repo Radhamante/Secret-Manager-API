@@ -26,5 +26,3 @@ def create_secret_logs(db: Session, secret_uuid: str, action: str):
     db.commit()
     db.refresh(secret_log)
     return secret_log
-
-    pass

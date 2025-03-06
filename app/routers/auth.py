@@ -1,5 +1,4 @@
 import logging
-from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
