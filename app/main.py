@@ -19,7 +19,7 @@ app = FastAPI()
 origins = [
     "http://secret-manager-front",  # Name of the Angular container in Docker
     "http://secret-api",  # Name of the backend service in Docker
-    "https://secret.radhamante.xyz",  # Public domain via Traefik
+    "https://secret.radhamante.fr",  # Public domain via Traefik
     "http://localhost:4200",  # Angular
 ]
 
