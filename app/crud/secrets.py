@@ -51,12 +51,7 @@ def read_secret(db: Session, secret_uuid: str, password: str):
 
 def read_user_secrets(db: Session, user: User, skip: int = 0, limit: int = 10):
     if user.is_admin:
-        return (
-            db.query(Secret)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        return db.query(Secret).offset(skip).limit(limit).all()
     return (
         db.query(Secret)
         .filter(Secret.user_uuid == user.uuid)

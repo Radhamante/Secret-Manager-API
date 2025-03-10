@@ -14,14 +14,12 @@ def create_user(db: Session, user: UserCreate) -> User:
         db.refresh(db_user)
     except Exception as e:
         db.rollback()
-        raise ValueError("Username already exists")
+        return None
     return db_user
 
 
 def get_user_by_uuid(db: Session, user_uuid: str) -> User:
     db_user = db.query(User).filter(User.uuid == user_uuid).first()
-    if db_user is None:
-        raise Exception("User not found")
     return db_user
 
 
@@ -33,6 +31,6 @@ def get_user_by_username_password(db: Session, username: str, password: str) -> 
         )
         .first()
     )
-    if db_user is None or verify_password(password, db_user.hashed_password) is False:
-        raise Exception("Invalid username or password")
+    if db_user is None or not verify_password(password, db_user.hashed_password):
+        return None
     return db_user

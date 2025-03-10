@@ -55,11 +55,16 @@ logger = logging.getLogger(__name__)
     summary="Upload a secret file",
     description="Upload a file that will be stored as a secret. The file requires a password and has optional usage limits and duration.",
     response_description="The details of the uploaded secret file",
+    responses={
+        401: {"description": "Not authenticated"},
+        413: {"description": "File size exceeds the 5MB limit"},
+        500: {"description": "Internal Server Error"},
+    },
 )
 async def post_secret_file(
     db: Session = Depends(get_db),
     user: Optional[User] = Depends(get_current_user),
-    file: UploadFile = File(..., description="The file to be uploaded"),
+    file: UploadFile = File(..., description="The file to be uploaded (max 5MB)"),
     password: str = Form(..., description="The password for the secret"),
     usage_limit: int = Form(
         ..., description="The usage limit for the secret. 0 = No limit"
@@ -69,6 +74,13 @@ async def post_secret_file(
     ),
 ):
     try:
+        # Check the file size (5MB = 5 * 1024 * 1024 bytes)
+        if file.size > 5 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="File size exceeds the 5MB limit",
+            )
+
         # Read the file content asynchronously
         file_content = await file.read()
 
@@ -91,6 +103,9 @@ async def post_secret_file(
 
         # Return the created secret
         return created_secret
+    except HTTPException as e:
+        # Re-raise the HTTP exception
+        raise e
     except Exception as e:
         # Log the error and raise an HTTP 500 exception
         logger.error(f"Error creating secret: {e}")
@@ -106,6 +121,10 @@ async def post_secret_file(
     summary="Create a secret text",
     description="Create a secret text that will be stored securely. The text requires a password and has optional usage limits and duration.",
     response_description="The details of the created secret text",
+    responses={
+        401: {"description": "Not authenticated"},
+        500: {"description": "Internal Server Error"},
+    },
 )
 async def post_secret_text(
     db: Session = Depends(get_db),
@@ -150,6 +169,9 @@ async def post_secret_text(
     "/count",
     summary="Get the count of secrets created",
     description="Get the count of secrets in real-time using Server-Sent Events (SSE). ( Only visible in console )",
+    responses={
+        500: {"description": "Internal Server Error"},
+    },
 )
 async def get_secret_count(db: Session = Depends(get_db)):
     async def secret_created_event_generator(db):
@@ -201,13 +223,7 @@ async def get_secret_type(
 @secrets_router.get(
     "/{secret_uuid}",
     responses={
-        200: {
-            "content": {
-                "application/json": {},
-                "application/octet-stream": {},
-            },
-            "description": "Successful Response",
-        },
+        200: {"description": "Successful Response"},
         404: {"description": "Secret not found"},
         500: {"description": "Internal Server Error"},
     },
@@ -264,6 +280,10 @@ async def get_secret(
     summary="Retrieve all secrets of a user",
     description="Retrieve all secrets of a user with pagination.",
     response_description="All secrets paginated",
+    responses={
+        401: {"description": "Not authenticated"},
+        500: {"description": "Internal Server Error"},
+    },
 )
 async def get_secrets(
     db: Session = Depends(get_db),
