@@ -1,8 +1,10 @@
 from app.crud.secrets import create_secret_from_text, read_secret
 from app.crypting import decrypt_text
+from app.models.user import User
 from app.schemas.secret import SecretCreateText, SecretType
 import asyncio
 import pytest
+from sqlalchemy.orm import Session
 
 
 def test_create_secret_from_text(
@@ -42,7 +44,7 @@ def test_create_secret_from_text(
     return result
 
 
-def test_read_secret_success(db_session, user):
+def test_read_secret_success(db_session: Session, user: User):
     password = "password"
     secret = test_create_secret_from_text(db_session, user, password=password)
 
@@ -53,7 +55,7 @@ def test_read_secret_success(db_session, user):
 
 
 @pytest.mark.asyncio
-async def test_read_secret_expired(db_session, user):
+async def test_read_secret_expired(db_session: Session, user: User):
     password = "password"
     secret = test_create_secret_from_text(
         db_session,
@@ -69,7 +71,7 @@ async def test_read_secret_expired(db_session, user):
     assert result is None
 
 
-def test_read_secret_usage_limit_exceeded(db_session, user):
+def test_read_secret_usage_limit_exceeded(db_session: Session, user: User):
     password = "password"
     secret = test_create_secret_from_text(
         db_session,
@@ -84,7 +86,7 @@ def test_read_secret_usage_limit_exceeded(db_session, user):
     assert result is None
 
 
-def test_read_secret_invalid_password(db_session, user):
+def test_read_secret_invalid_password(db_session: Session, user: User):
     password = "password"
     secret = test_create_secret_from_text(
         db_session,

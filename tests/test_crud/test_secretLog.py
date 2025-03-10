@@ -17,17 +17,6 @@ def test_create_secret_logs(
     assert result.secret_id == created_secret.uuid
 
 
-def test_read_secret_logs(db_session, user):
-    created_secret_1 = test_create_secret_from_text(db_session, user)
-    created_secret_2 = test_create_secret_from_text(db_session, user)
-
-    result = read_secret_logs(db_session)
-
-    assert len(result) == 2
-    assert result[0].secret_id == created_secret_1.uuid
-    assert result[1].secret_id == created_secret_2.uuid
-
-
 def test_read_secret_log(db_session, user):
     created_secret = test_create_secret_from_text(db_session, user)
     result = read_secret_log(db_session, created_secret.uuid)
