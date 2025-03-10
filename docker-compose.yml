@@ -31,9 +31,6 @@ services:
       - "traefik.http.routers.secret-api.tls=true"
       - "traefik.http.routers.secret-api.tls.certresolver=myresolver"
       - "traefik.http.services.secret-api.loadbalancer.server.port=8081"
-      - "traefik.http.routers.secret-api.middlewares=crowdsec@docker"
-      - "traefik.http.middlewares.crowdsec.plugin.bouncer.enabled=true"
-      - "traefik.http.middlewares.crowdsec.plugin.bouncer.crowdseclapikey=kdNHxCWcLn+0enY/z7KrhodlO/eTnDSiq1H82a6X86Q"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
