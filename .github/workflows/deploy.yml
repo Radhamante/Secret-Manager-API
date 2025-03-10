@@ -3,42 +3,42 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - master  # Le déploiement sera déclenché sur un push vers la branche principale.
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Étape 1 : Cloner le dépôt
+      # Step 1: Clone the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Étape 2 : Installer Python et les dépendances
+      # Step 2: Install Python and dependencies
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Remplace par la version de Python que tu utilises
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt  # Installe les dépendances, incluant pytest
+          pip install -r requirements.txt
 
-      # Étape 3 : Lancer les tests
+      # Step 3: Run tests
       - name: Run tests with pytest
         run: |
-          pytest tests/ --maxfail=1 --disable-warnings -q  # Exécute les tests dans le dossier 'tests'
+          pytest tests/ --maxfail=1 --disable-warnings -q
 
-      # Étape 4 : Se connecter au VPS et lancer Docker Compose
+      # Step 4: Connect to the VPS and launch Docker Compose
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.VPS_HOST }}  # IP ou domaine de ton VPS
-          username: ${{ secrets.VPS_USER }}  # Nom d'utilisateur SSH
-          key: ${{ secrets.VPS_SSH_KEY }}  # Clé privée SSH
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/debian/projects/secretManager  # Remplace par le chemin correct sur ton VPS
-            git pull origin master  # Mettre à jour le code
-            docker compose down  # Arrêter les conteneurs existants
-            docker compose up -d --build --remove-orphans  # Redémarrer avec les dernières modifications
+            cd /home/debian/projects/Secret-Manager-API
+            git pull origin master
+            docker compose down
+            docker compose up -d --build --remove-orphans
