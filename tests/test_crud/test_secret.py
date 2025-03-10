@@ -1,6 +1,8 @@
 from app.crud.secrets import create_secret_from_text, read_secret
 from app.crypting import decrypt_text
 from app.schemas.secret import SecretCreateText, SecretType
+import asyncio
+import pytest
 
 
 def test_create_secret_from_text(
