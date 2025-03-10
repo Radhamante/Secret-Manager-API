@@ -50,21 +50,21 @@ def test_read_secret_success(db_session, user):
     assert secret.usage_count == 1
 
 
-# @pytest.mark.asyncio
-# async def test_read_secret_expired(db_session, user):
-#     password = "password"
-#     secret = test_create_secret_from_text(
-#         db_session,
-#         user,
-#         password=password,
-#         duration=1,
-#     )
+@pytest.mark.asyncio
+async def test_read_secret_expired(db_session, user):
+    password = "password"
+    secret = test_create_secret_from_text(
+        db_session,
+        user,
+        password=password,
+        duration=1,
+    )
 
-#     await asyncio.sleep(61)
+    await asyncio.sleep(61)
 
-#     result = read_secret(db_session, secret.uuid, password)
+    result = read_secret(db_session, secret.uuid, password)
 
-#     assert result is None
+    assert result is None
 
 
 def test_read_secret_usage_limit_exceeded(db_session, user):
