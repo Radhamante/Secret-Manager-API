@@ -133,3 +133,17 @@ def create_secret(
 
 def count_secrets(db: Session):
     return db.query(Secret).count()
+
+
+def delete_secret(db: Session, secret_uuid: str, user: User) -> bool:
+    secret = (
+        db.query(Secret)
+        .filter(Secret.uuid == secret_uuid, Secret.user_uuid == user.uuid)
+        .first()
+    )
+    if secret:
+        db.delete(secret)
+        db.commit()
+        return True
+    else:
+        return False

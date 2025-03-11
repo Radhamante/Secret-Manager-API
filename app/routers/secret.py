@@ -23,6 +23,7 @@ from app.crud.secrets import (
     count_secrets,
     create_secret_from_file,
     create_secret_from_text,
+    delete_secret,
     read_secret,
     read_secret_type,
     read_user_secrets,
@@ -159,6 +160,35 @@ async def post_secret_text(
         return created_secret
     except Exception as e:
         logger.error(f"Error creating secret: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error",
+        )
+
+
+@secrets_router.delete(
+    "/{secret_uuid}",
+    responses={
+        200: {"description": "Successful Response"},
+        401: {"description": "Not authenticated"},
+        500: {"description": "Internal Server Error"},
+    },
+    summary="Delete a secret",
+    description="Delete a user secret using its UUID.",
+)
+async def del_secret(
+    secret_uuid: str = Path(..., description="The UUID of the secret to delete"),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        # Delete the secret from the database
+        delete_secret(db, secret_uuid, user)
+        return JSONResponse(content=jsonable_encoder({"message": "Secret deleted"}))
+    except Exception as e:
+        logger.error(f"Error deleting secret: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error",
