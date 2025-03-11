@@ -2,6 +2,9 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
+
 from app.crud.secretLog import create_secret_logs
 from app.crypting import encrypt_text
 from app.events import secret_created_event
@@ -9,12 +12,11 @@ from app.hash_manager import hash_password, verify_password
 from app.models.secret import Secret
 from app.models.secretContent import SecretContent
 from app.models.secretFileContent import SecretFileContent
+from app.models.secretLogs import SecretLogs
 from app.models.secretTextContent import SecretTextContent
 from app.models.user import User
 from app.schemas.secret import SecretCreate, SecretCreateFile, SecretCreateText
 from app.schemas.secretLog import SecretLogActionEnum
-from sqlalchemy import or_
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +32,18 @@ def read_secret_type(db: Session, secret_uuid: str) -> str | None:
 def read_secret(db: Session, secret_uuid: str, password: str):
     secret = (
         db.query(Secret)
+        .outerjoin(
+            SecretLogs,
+            and_(
+                SecretLogs.secret_id == Secret.uuid,
+                SecretLogs.action == SecretLogActionEnum.DELETE,
+            ),
+        )
         .filter(
             Secret.uuid == secret_uuid,
             or_(Secret.destruction == None, Secret.destruction > datetime.now()),
             or_(Secret.usage_limit == None, Secret.usage_limit > Secret.usage_count),
+            SecretLogs.uuid == None,  # Assurez-vous qu'il n'y a pas de log "DELETED"
         )
         .first()
     )
@@ -54,6 +64,13 @@ def read_user_secrets(db: Session, user: User, skip: int = 0, limit: int = 10):
         return db.query(Secret).offset(skip).limit(limit).all()
     return (
         db.query(Secret)
+        .outerjoin(
+            SecretLogs,
+            and_(
+                SecretLogs.secret_id == Secret.uuid,
+                SecretLogs.action == SecretLogActionEnum.DELETE,
+            ),
+        )
         .filter(Secret.user_uuid == user.uuid)
         .offset(skip)
         .limit(limit)
@@ -142,8 +159,7 @@ def delete_secret(db: Session, secret_uuid: str, user: User) -> bool:
         .first()
     )
     if secret:
-        db.delete(secret)
-        db.commit()
+        create_secret_logs(db, secret_uuid, SecretLogActionEnum.DELETE)
         return True
     else:
         return False

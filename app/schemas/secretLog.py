@@ -1,8 +1,7 @@
-from enum import Enum
-
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -10,6 +9,7 @@ class SecretLogActionEnum(Enum):
     CREATE = "create"
     GET = "get"
     EXPIRE = "expire"
+    DELETE = "delete"
 
 
 class BaseSecretLog(BaseModel):
