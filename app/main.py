@@ -11,10 +11,13 @@ from app.routers.secretLogs import secrets_log_router
 from app.utils import PrometheusMiddleware, metrics, setting_otlp
 from fastapi.middleware.cors import CORSMiddleware
 
+APP_NAME = os.environ.get("APP_NAME", "SecretManager")
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    title=APP_NAME,
+)
 
 origins = [
     "http://secret-manager-front",  # Name of the Angular container in Docker
@@ -32,9 +35,6 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],  # Expose the Content-Disposition header
 )
 
-OTLP_GRPC_ENDPOINT = os.environ.get("OTLP_GRPC_ENDPOINT", "http://tempo:4317")
-APP_NAME = os.environ.get("APP_NAME", "fastapi-app")
-
 
 class EndpointFilter(logging.Filter):
     # Uvicorn endpoint access log filter
@@ -51,7 +51,7 @@ app.add_middleware(PrometheusMiddleware, app_name=APP_NAME)
 app.add_route("/metrics", metrics)
 
 # Setting OpenTelemetry exporter
-setting_otlp(app, APP_NAME, OTLP_GRPC_ENDPOINT)
+setting_otlp(app, APP_NAME)
 
 app.include_router(auth_router)
 app.include_router(secrets_router)

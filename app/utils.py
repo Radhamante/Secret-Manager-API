@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Tuple
 
@@ -13,12 +14,15 @@ from prometheus_client.openmetrics.exposition import (
     CONTENT_TYPE_LATEST,
     generate_latest,
 )
+import requests
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from starlette.types import ASGIApp
+
+logger = logging.getLogger(__name__)
 
 INFO = Gauge("fastapi_app_info", "FastAPI application information.", ["app_name"])
 REQUESTS = Counter(
@@ -118,9 +122,26 @@ def metrics(request: Request) -> Response:
     )
 
 
-def setting_otlp(
-    app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool = True
-) -> None:
+def is_tempo_available(endpoint: str) -> bool:
+    """Vérifie si Tempo est disponible en envoyant une requête OTLP."""
+    tempo_url = f"{endpoint}:4318/ready"  # URL standard pour l'export OTLP HTTP
+
+    try:
+        response = requests.post(tempo_url, timeout=2)
+        return response.status_code in {200, 204}  # 204 = Pas de contenu (succès)
+    except requests.RequestException as err:
+        logger.warning(f"Erreur lors de la vérification de Tempo : {err}")
+        return False
+
+
+def setting_otlp(app: ASGIApp, app_name: str, log_correlation: bool = True) -> None:
+
+    endpoint = "http://tempo"
+
+    if not is_tempo_available(endpoint):
+        print("OpenTelemetry désactivé : Tempo n'est pas disponible.")
+        return
+
     # Setting OpenTelemetry
     # set the service name to show in traces
     resource = Resource.create(
@@ -131,7 +152,9 @@ def setting_otlp(
     tracer = TracerProvider(resource=resource)
     trace.set_tracer_provider(tracer)
 
-    tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
+    tracer.add_span_processor(
+        BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{endpoint}:4317"))
+    )
 
     if log_correlation:
         LoggingInstrumentor().instrument(set_logging_format=True)
