@@ -47,7 +47,7 @@ uvicorn==0.22.0
 watchfiles==1.0.0
 websockets==14.1
 pre-commit==4.1.0
-
+alembic==1.15.1
 
 prometheus-client==0.20.0
 opentelemetry-distro==0.45b0
